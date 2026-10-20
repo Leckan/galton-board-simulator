@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#101218" />
+  <meta name="description" content="Explore probability, randomness, and the binomial distribution in Galton Lab." />
+  <title>Galton Lab — Probability in motion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <script type="module" src="src/main.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="Galton Lab home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <span>galton<span class="brand-light">lab</span></span>
+    </a>
+    <nav class="main-nav" aria-label="Main navigation">
+      <a class="nav-link active" href="#simulator">Simulator</a>
+      <a class="nav-link" href="#learn">Learn</a>
+      <a class="nav-link" href="#experiments">Experiments</a>
+      <a class="nav-link" href="#about">About</a>
+    </nav>
+    <div class="header-actions">
+      <span class="live-pill"><span class="live-dot"></span> LIVE LAB</span>
+      <button class="icon-button" id="theme-toggle" aria-label="Switch to light theme" title="Toggle theme"><span class="theme-icon">☼</span></button>
+      <button class="icon-button help-button" id="help-button" aria-label="Open quick guide" title="Quick guide">?</button>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="intro wrap" id="simulator">
+      <div>
+        <div class="eyebrow"><span class="eyebrow-line"></span> AN INTERACTIVE PROBABILITY LAB</div>
+        <h1>Randomness,<br /><em>made visible.</em></h1>
+        <p class="intro-copy">A thousand tiny decisions. One beautiful pattern.<br class="desktop-break" /> Release the balls and watch probability take shape.</p>
+      </div>
+      <div class="intro-right">
+        <div class="run-status"><span class="status-orb" id="status-orb"></span><span id="run-status-label">READY TO RUN</span></div>
+        <div class="seed-wrap"><label for="seed-input">SEED</label><input id="seed-input" type="text" value="galton-01" maxlength="32" aria-label="Random seed" /><button id="reseed-button" title="Generate a new seed" aria-label="Generate a new seed">↻</button></div>
+        <div class="subtle-note">Same seed = same sequence</div>
+      </div>
+    </section>
+
+    <section class="workspace wrap" aria-label="Galton board simulator">
+      <div class="board-card panel">
+        <div class="panel-heading board-heading">
+          <div><span class="section-kicker">THE BOARD</span><h2>Watch the odds unfold<span class="heading-period">.</span></h2></div>
+          <div class="board-meta"><span class="meta-tag"><b id="rows-meta">12</b> ROWS</span><span class="meta-tag"><b id="bins-meta">13</b> BINS</span></div>
+        </div>
+        <div class="board-stage" id="board-stage">
+          <canvas id="board-canvas" aria-label="Animated Galton board. Balls make one random left or right decision at each peg row."></canvas>
+          <div class="board-overlay top-overlay"><span>RELEASE</span><span class="release-arrow">↓</span></div>
+          <div class="board-overlay bottom-overlay" aria-hidden="true"><span>OUTCOME BINS</span><span class="overlay-line"></span></div>
+          <div class="canvas-hint" id="canvas-hint">Press <b>Drop 1</b> to start</div>
+        </div>
+        <div class="board-footer">
+          <div class="board-legend"><span class="legend-item"><i class="legend-ball"></i> BALL</span><span class="legend-item"><i class="legend-peg"></i> PEG</span><span class="legend-item"><i class="legend-theory"></i> EXPECTED</span></div>
+          <div class="board-footer-live"><span class="pulse-dot"></span><span id="board-live-count">0 balls in motion</span></div>
+        </div>
+      </div>
+
+      <aside class="controls-card panel" aria-label="Simulation controls">
+        <div class="panel-heading controls-heading"><div><span class="section-kicker">CONTROL DECK</span><h2>Set the experiment</h2></div><span class="deck-icon">⌘</span></div>
+        <div class="control-block release-block">
+          <div class="control-title"><span>RELEASE BALLS</span><span class="control-help" title="Choose how many observations to add.">i</span></div>
+          <div class="release-main"><button class="button-primary" id="drop-one"><span class="button-ball">●</span> Drop 1</button><button class="button-icon" id="drop-ten" aria-label="Drop 10 balls">+10</button><button class="button-icon" id="drop-hundred" aria-label="Drop 100 balls">+100</button></div>
+          <div class="release-secondary"><button class="button-quiet" id="drop-thousand">Drop 1,000</button><button class="button-quiet" id="fast-toggle">⚡ Fast run</button></div>
+          <div class="continuous-row"><button class="continuous-button" id="continuous-button"><span class="play-icon">▶</span><span>Continuous run</span><span class="toggle-track"><i></i></span></button><button class="button-quiet pause-button" id="pause-button" disabled>Ⅱ Pause</button></div>
+        </div>
+
+        <div class="control-block configuration-block">
+          <div class="control-title"><span>BOARD CONFIGURATION</span><span><button class="text-button" id="clear-stats">Clear stats</button><span class="inline-separator">·</span><button class="text-button" id="reset-board">Reset board</button></span></div>
+          <label class="range-control" for="rows-input"><span>PEG ROWS <b id="rows-value">12</b></span><input id="rows-input" type="range" min="5" max="20" value="12" /><span class="range-limits"><small>5</small><small>20</small></span></label>
+          <label class="range-control" for="rate-input"><span>RELEASE RATE <b id="rate-value">12 / sec</b></span><input id="rate-input" type="range" min="1" max="60" value="12" /><span class="range-limits"><small>1</small><small>60 balls/sec</small></span></label>
+          <div class="probability-head"><span>LEFT / RIGHT CHANCE</span><button class="switch-label" id="symmetric-toggle" aria-pressed="true"><span class="tiny-switch"><i></i></span> Symmetric</button></div>
+          <label class="range-control probability-range" for="probability-input"><span>LEFT <b id="probability-value">50%</b></span><input id="probability-input" type="range" min="0" max="100" value="50" disabled /><span class="prob-ends"><small id="left-prob-label">50% LEFT</small><small id="right-prob-label">50% RIGHT</small></span></label>
+          <div class="bias-note" id="bias-note"><span>↔</span> Equal odds. The distribution stays centered.</div>
+        </div>
+
+        <details class="advanced-controls">
+          <summary>Advanced settings <span>+</span></summary>
+          <div class="advanced-grid">
+            <label class="range-control" for="speed-input"><span>ANIMATION SPEED <b id="speed-value">Normal</b></span><input id="speed-input" type="range" min="1" max="3" value="2" /><span class="range-limits"><small>Slow</small><small>Fast</small></span></label>
+            <label class="range-control" for="size-input"><span>BALL SIZE <b id="size-value">4 px</b></span><input id="size-input" type="range" min="2" max="8" value="4" /><span class="range-limits"><small>Small</small><small>Large</small></span></label>
+            <label class="range-control" for="gravity-input"><span>GRAVITY <b id="gravity-value">1.0×</b></span><input id="gravity-input" type="range" min="5" max="20" value="10" /><span class="range-limits"><small>Light</small><small>Strong</small></span></label>
+            <label class="range-control" for="bounce-input"><span>BOUNCE <b id="bounce-value">0.6×</b></span><input id="bounce-input" type="range" min="0" max="10" value="6" /><span class="range-limits"><small>Soft</small><small>Springy</small></span></label>
+            <label class="range-control" for="spread-input"><span>PEG SPREAD <b id="spread-value">1.0×</b></span><input id="spread-input" type="range" min="7" max="14" value="10" /><span class="range-limits"><small>Compact</small><small>Wide</small></span></label>
+            <label class="range-control" for="max-input"><span>MAX ANIMATED <b id="max-value">180</b></span><input id="max-input" type="range" min="20" max="400" step="20" value="180" /><span class="range-limits"><small>20</small><small>400</small></span></label>
+            <label class="check-control"><input id="reduced-motion" type="checkbox" /><span>Reduce motion</span></label>
+          </div>
+          <p class="advanced-note">Timing, size, bounce, and spacing change the display only. The configured left/right chance determines each bin outcome.</p>
+        </details>
+        <div class="controls-bottom"><span><i class="shield-icon">◈</i> Simulated locally in your browser</span><span id="simulation-mode">ANIMATED MODE</span></div>
+      </aside>
+    </section>
+
+    <section class="stats-section wrap" aria-label="Live statistics">
+      <div class="stats-topline"><div><span class="section-kicker">LIVE OBSERVATIONS</span><h2>Every outcome, accounted for<span class="heading-period">.</span></h2></div><div class="progress-wrap"><div class="progress-label"><span>RUN PROGRESS</span><b id="progress-value">0%</b></div><div class="progress-track"><i id="progress-bar"></i></div></div></div>
+      <div class="stats-grid">
+        <article class="stat-card stat-accent"><div class="stat-label">TOTAL RELEASED <span class="stat-icon">↗</span></div><div class="stat-number" id="stat-released">0</div><div class="stat-caption">balls in this experiment</div></article>
+        <article class="stat-card"><div class="stat-label">LANDED <span class="stat-icon">↓</span></div><div class="stat-number" id="stat-landed">0</div><div class="stat-caption"><span id="stat-moving">0</span> currently in motion</div></article>
+        <article class="stat-card"><div class="stat-label">MEAN POSITION <span class="stat-icon">μ</span></div><div class="stat-number" id="stat-mean">—</div><div class="stat-caption">theory: <span id="theory-mean">6.00</span></div></article>
+        <article class="stat-card"><div class="stat-label">MEDIAN POSITION <span class="stat-icon">↔</span></div><div class="stat-number" id="stat-median">—</div><div class="stat-caption">middle landed outcome</div></article>
+        <article class="stat-card"><div class="stat-label">STANDARD DEVIATION <span class="stat-icon">σ</span></div><div class="stat-number" id="stat-sd">—</div><div class="stat-caption">theory: <span id="theory-sd">1.73</span></div></article>
+        <article class="stat-card"><div class="stat-label">VARIANCE <span class="stat-icon">σ²</span></div><div class="stat-number" id="stat-variance">—</div><div class="stat-caption">spread around the mean</div></article>
+        <article class="stat-card"><div class="stat-label">MOST COMMON BIN <span class="stat-icon">⌃</span></div><div class="stat-number" id="stat-mode">—</div><div class="stat-caption" id="stat-mode-caption">awaiting first landing</div></article>
+        <article class="stat-card"><div class="stat-label">LANDED RANGE <span class="stat-icon">↔</span></div><div class="stat-number range-number" id="stat-range">—</div><div class="stat-caption">minimum to maximum bin</div></article>
+      </div>
+    </section>
+
+    <section class="analysis-grid wrap" aria-label="Distribution analysis">
+      <article class="distribution-card panel">
+        <div class="panel-heading chart-heading"><div><span class="section-kicker">DISTRIBUTION</span><h2>Observed vs. expected</h2></div><div class="segmented" role="group" aria-label="Histogram display units"><button class="segment active" data-unit="count">Count</button><button class="segment" data-unit="relative">Relative</button><button class="segment" data-unit="percent">Percent</button></div></div>
+        <div class="chart-summary"><span><i class="legend-square empirical-square"></i> Observed <b id="observed-total">0</b></span><span><i class="legend-square mode-square"></i> Most common</span><span><i class="legend-square theory-square"></i> Binomial expectation</span><span class="chart-note" id="chart-note">n = 12 · p(right) = 0.50</span></div>
+        <div class="chart-canvas-wrap"><canvas id="distribution-canvas" aria-label="Histogram of observed bin counts compared with theoretical binomial probabilities"></canvas><div class="chart-tooltip" id="chart-tooltip" role="status"></div></div>
+        <div class="chart-axis-labels"><span>LEFT OUTCOMES</span><span>BINS · NUMBER OF RIGHT TURNS</span><span>RIGHT OUTCOMES</span></div>
+        <div class="bin-text-summary" id="bin-text-summary" aria-label="Text summary of bin counts"></div>
+      </article>
+
+      <article class="insight-card panel">
+        <div class="panel-heading"><div><span class="section-kicker">THEORY CHECK</span><h2>The shape of chance</h2></div><span class="insight-spark" aria-hidden="true">✳</span></div>
+        <div class="insight-chart" id="insight-chart" aria-label="Theoretical binomial distribution"></div>
+        <div class="insight-equation"><span>BINOMIAL MODEL</span><strong>X ∼ Binomial(<i id="equation-n">12</i>, <i id="equation-p">0.50</i>)</strong></div>
+        <p class="insight-copy" id="insight-copy">Each ball makes an independent decision at every row. With equal odds, the most likely outcome is near the center.</p>
+        <div class="insight-bottom"><span>EXPECTED VALUE</span><b id="insight-mu">6.00</b><span class="insight-divider"></span><span>VARIANCE</span><b id="insight-var">3.00</b></div>
+      </article>
+    </section>
+
+    <section class="experiments-section wrap" id="experiments">
+      <div class="section-topline"><div><span class="section-kicker">START WITH A QUESTION</span><h2>Choose an experiment<span class="heading-period">.</span></h2></div><p>One click sets up the board and runs the sample.<br />Large samples use fast statistical mode.</p></div>
+      <div class="scenario-grid">
+        <button class="scenario-card" data-preset="beginner"><span class="scenario-number">01</span><span class="scenario-tag">FIRST STEPS</span><strong>Small beginnings</strong><span class="scenario-desc">5 rows · 50 balls · symmetric</span><span class="scenario-cta">Run experiment <i>↗</i></span></button>
+        <button class="scenario-card" data-preset="medium"><span class="scenario-number">02</span><span class="scenario-tag">LAW OF LARGE NUMBERS</span><strong>Watch it settle</strong><span class="scenario-desc">12 rows · 1,000 balls · symmetric</span><span class="scenario-cta">Run experiment <i>↗</i></span></button>
+        <button class="scenario-card" data-preset="large-sample"><span class="scenario-number">03</span><span class="scenario-tag">BELL CURVE IN MOTION</span><strong>Scale the sample</strong><span class="scenario-desc">15 rows · 10,000 outcomes · symmetric</span><span class="scenario-cta">Fast run <i>↗</i></span></button>
+        <button class="scenario-card" data-preset="precision"><span class="scenario-number">04</span><span class="scenario-tag">HIGH PRECISION</span><strong>Big sample energy</strong><span class="scenario-desc">20 rows · 100,000 outcomes</span><span class="scenario-cta">Fast run <i>↗</i></span></button>
+        <button class="scenario-card biased-scenario" data-preset="biased"><span class="scenario-number">05</span><span class="scenario-tag">BREAK THE SYMMETRY</span><strong>Tip the odds</strong><span class="scenario-desc">12 rows · 70% right · 1,000 balls</span><span class="scenario-cta">Run experiment <i>↗</i></span></button>
+      </div>
+      <div class="scenario-more"><button class="button-quiet" data-preset="small">+ Small sample · 8 rows / 100 balls</button><button class="button-quiet" id="custom-experiment">＋ Run custom sample</button></div>
+    </section>
+
+    <section class="learn-section wrap" id="learn">
+      <div class="learn-main panel">
+        <div class="panel-heading"><div><span class="section-kicker">THE SCIENCE, IN SHORT</span><h2>Six steps from chance to pattern</h2></div><span class="learn-book" aria-hidden="true">✳</span></div>
+        <div class="lesson-tabs" role="tablist" aria-label="Learning topics">
+          <button class="lesson-tab active" data-lesson="randomness" role="tab" aria-selected="true">01 <span>Randomness</span></button>
+          <button class="lesson-tab" data-lesson="large-numbers" role="tab" aria-selected="false">02 <span>Law of large numbers</span></button>
+          <button class="lesson-tab" data-lesson="binomial" role="tab" aria-selected="false">03 <span>Binomial distribution</span></button>
+          <button class="lesson-tab" data-lesson="normal" role="tab" aria-selected="false">04 <span>Normal approximation</span></button>
+          <button class="lesson-tab" data-lesson="bias" role="tab" aria-selected="false">05 <span>Biased probability</span></button>
+          <button class="lesson-tab" data-lesson="clt" role="tab" aria-selected="false">06 <span>Central limit theorem</span></button>
+        </div>
+        <div class="lesson-content" id="lesson-content" role="tabpanel"><div class="lesson-index">EXPERIMENT 01 <span>·</span> RANDOMNESS</div><h3>Same rules. Different paths.</h3><p>Every ball takes its own sequence of left and right turns. A small sample can look lopsided even when each turn is perfectly fair—that’s randomness doing its thing.</p><div class="lesson-action"><span>TRY THIS</span><b>Drop 20 balls. How different do the two halves look?</b><button id="lesson-action-button">Drop 20 balls <i>↗</i></button></div></div>
+      </div>
+      <aside class="history-card panel">
+        <div class="panel-heading"><div><span class="section-kicker">YOUR NOTEBOOK</span><h2>Recent runs</h2></div><button class="text-button" id="clear-history">Clear</button></div>
+        <div class="history-list" id="history-list"><div class="history-empty"><span>↳</span><p>Your completed experiments<br />will appear here.</p></div></div>
+        <div class="history-actions"><button class="button-quiet" id="export-csv">↓ Export CSV</button><button class="button-quiet" id="export-json">↓ Summary JSON</button></div>
+        <div class="compare-box" id="compare-box"><span class="compare-label">COMPARE LAST TWO RUNS</span><div id="compare-content">Run two experiments to compare their means and spreads.</div></div>
+      </aside>
+    </section>
+
+    <section class="about-strip wrap" id="about"><div class="about-mark">GL<span>.</span></div><div><span class="section-kicker">ABOUT THIS LAB</span><p>A Galton board turns independent random choices into a visible distribution. With <i>n</i> rows, each ball’s final bin follows a binomial distribution—and as <i>n</i> grows, that shape approaches a normal curve.</p></div><div class="about-formula">P(X = k) = <span>ⁿCₖ pᵏ (1 − p)ⁿ⁻ᵏ</span></div></section>
+  </main>
+
+  <footer class="footer wrap"><span>GALTON LAB <i>·</i> A LITTLE LAB FOR BIG IDEAS</span><span>NO ACCOUNT NEEDED <i>·</i> YOUR DATA STAYS HERE</span></footer>
+  <div class="sr-only" id="announcer" aria-live="polite" aria-atomic="true"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="guide-dialog" class="guide-dialog"><button class="dialog-close" id="close-guide" aria-label="Close guide">×</button><span class="section-kicker">A 30-SECOND GUIDE</span><h2>How the board works</h2><p>At every peg, a ball gets one chance to turn left or right. After <i>n</i> rows, its bin number equals the number of right turns it made.</p><div class="guide-formula">X ∼ Binomial(n, p)</div><p>Try a few runs with the same settings. A small sample can be uneven; as the sample grows, the observed bars tend to follow the theoretical curve.</p><button class="button-primary" id="got-it">Got it, let's go</button></dialog>
+</body>
+</html>
